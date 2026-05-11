@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>🍕 Slice & Spice</title>
+<link href="https://fonts.googleapis.com/css2?family=Lobster&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--tomato:#c0392b;--tomato2:#e74c3c;--cheese:#f39c12;--crust:#d35400;--cream:#fdf6ec;--brown:#4a2c0a;--green:#27ae60;--bg:#1a0a00;--card:#2b1100;--border:#3d1a00;--text:#fdf6ec;--muted:#c9a87c}
+body{background:var(--bg);background-image:radial-gradient(ellipse at 20% 20%,#3d1a0044 0%,transparent 60%),radial-gradient(ellipse at 80% 80%,#c0392b22 0%,transparent 60%);color:var(--text);font-family:'Nunito',sans-serif;min-height:100vh}
+body::before{content:'🍕';position:fixed;font-size:200px;opacity:.03;top:-40px;right:-40px;pointer-events:none;z-index:0}
+.app{max-width:960px;margin:0 auto;padding:0 16px 80px;position:relative;z-index:1}
+.hero{padding:32px 0 6px;text-align:center}
+.hero h1{font-family:'Lobster',cursive;font-size:clamp(36px,7vw,68px);color:var(--cheese);text-shadow:3px 3px 0 var(--tomato),6px 6px 0 var(--brown);line-height:1.1}
+.hero h1 span{color:var(--tomato2)}
+.hero p{color:var(--muted);font-size:11px;margin-top:6px;letter-spacing:3px;text-transform:uppercase}
+.divider{text-align:center;font-size:18px;letter-spacing:8px;margin:8px 0 16px;opacity:.4}
+/* ROLE BAR - always on top */
+.role-bar{display:flex;gap:8px;overflow-x:auto;padding:4px 0 18px;scrollbar-width:none;position:sticky;top:0;z-index:50;background:var(--bg);padding-top:8px}
+.role-bar::-webkit-scrollbar{display:none}
+.role-chip{flex-shrink:0;padding:9px 20px;border-radius:99px;border:2px solid var(--border);background:var(--card);color:var(--muted);font-size:13px;font-family:'Nunito',sans-serif;font-weight:800;cursor:pointer;transition:all .2s}
+.role-chip:hover{border-color:var(--cheese);color:var(--cheese)}
+.role-chip.active{background:linear-gradient(135deg,var(--tomato),var(--crust));border-color:var(--cheese);color:var(--cheese);box-shadow:0 4px 20px #c0392b55}
+.view{display:none}.view.active{display:block}
+.section-title{font-family:'Lobster',cursive;font-size:24px;color:var(--cheese);margin-bottom:16px;text-shadow:2px 2px 0 var(--brown)}
+.tab-bar{display:flex;gap:8px;margin-bottom:18px;border-bottom:2px solid var(--border);padding-bottom:10px}
+.tab-btn{padding:8px 16px;border-radius:10px;border:none;background:transparent;color:var(--muted);font-family:'Nunito',sans-serif;font-weight:700;font-size:13px;cursor:pointer;transition:all .2s}
+.tab-btn.active{background:var(--card);color:var(--cheese);border:1px solid var(--border)}
+.cust-panel{display:none}.cust-panel.active{display:block}
+.input{width:100%;padding:11px 16px;border-radius:12px;border:2px solid var(--border);background:#110500;color:var(--text);font-size:14px;margin-top:4px;font-family:'Nunito',sans-serif;font-weight:600;transition:border-color .2s}
+.input:focus{outline:none;border-color:var(--cheese)}
+.form-label{display:block;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin:12px 0 4px;font-weight:800}
+.primary-btn{padding:11px 22px;border-radius:12px;border:none;background:linear-gradient(135deg,var(--tomato2),var(--tomato));color:#fff;font-family:'Nunito',sans-serif;font-weight:900;font-size:14px;cursor:pointer;transition:all .2s;box-shadow:0 4px 15px #e74c3c44}
+.primary-btn:hover{transform:translateY(-2px);box-shadow:0 6px 20px #e74c3c66}
+.primary-btn.full{width:100%;padding:14px;font-size:16px;margin-top:14px}
+.secondary-btn{padding:9px 18px;border-radius:12px;border:2px solid var(--border);background:transparent;color:var(--text);font-size:13px;font-weight:700;cursor:pointer;font-family:'Nunito',sans-serif}
+.del-btn{width:30px;height:30px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;font-size:12px}
+.pizza-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px}
+.pizza-card{background:var(--card);border:2px solid var(--border);border-radius:18px;padding:16px;cursor:pointer;transition:all .25s;display:flex;gap:12px;align-items:center}
+.pizza-card:hover{border-color:var(--cheese);transform:translateY(-3px);box-shadow:0 8px 30px #f39c1233}
+.pizza-emoji{font-size:40px;flex-shrink:0}
+.pizza-info strong{font-size:14px;display:block;color:var(--cream);font-weight:800}
+.pizza-info p{font-size:12px;color:var(--muted);margin:3px 0 5px}
+.price{color:var(--cheese);font-weight:900;font-size:13px}
+.price.big{font-size:19px}
+.btn-group{display:flex;flex-wrap:wrap;gap:7px}
+.opt-btn{padding:7px 13px;border-radius:10px;border:2px solid var(--border);background:#110500;color:var(--muted);font-size:12px;font-weight:700;cursor:pointer;transition:all .15s;font-family:'Nunito',sans-serif}
+.opt-btn.active{border-color:var(--cheese);color:var(--cheese);background:#2b1a00}
+.qty-row{display:flex;align-items:center;gap:14px;margin:6px 0}
+.qty-btn{width:34px;height:34px;border-radius:10px;border:2px solid var(--border);background:#110500;color:var(--text);font-size:20px;cursor:pointer;font-weight:900}
+.qty-btn:hover{border-color:var(--cheese);color:var(--cheese)}
+.qty-val{font-size:18px;font-weight:900;min-width:24px;text-align:center;color:var(--cream)}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);align-items:center;justify-content:center;z-index:100;padding:16px;backdrop-filter:blur(4px)}
+.modal-overlay.open{display:flex}
+.modal{background:var(--card);border:2px solid var(--border);border-radius:22px;padding:26px;width:100%;max-width:440px;box-shadow:0 20px 60px #00000088}
+.modal h3{font-family:'Lobster',cursive;font-size:24px;color:var(--cheese);margin-bottom:4px;text-shadow:2px 2px 0 var(--brown)}
+.modal-footer{display:flex;align-items:center;justify-content:space-between;margin-top:20px}
+.order-card{background:var(--card);border:2px solid var(--border);border-radius:18px;padding:16px;margin-bottom:12px}
+.order-card.kitchen{border-color:#27ae6033}
+.order-card-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;font-size:14px;font-weight:800}
+.order-card-foot{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-top:8px}
+.order-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border)}
+.total-row{display:flex;justify-content:space-between;padding:12px 0;border-top:1px solid var(--border);margin-top:8px;font-weight:800}
+.status-badge{padding:4px 12px;border-radius:99px;font-size:11px;font-weight:900;color:#fff;font-family:'Nunito',sans-serif}
+.stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.stat-card{background:var(--card);border:2px solid var(--border);border-radius:18px;padding:20px;text-align:center}
+.stat-num{font-family:'Lobster',cursive;font-size:30px;color:var(--cheese);text-shadow:2px 2px 0 var(--brown)}
+.stat-label{font-size:11px;color:var(--muted);margin-top:4px;text-transform:uppercase;letter-spacing:1px;font-weight:800}
+.bar-row{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.bar-track{flex:1;height:12px;background:var(--border);border-radius:99px;overflow:hidden}
+.bar-fill{height:100%;background:linear-gradient(90deg,var(--tomato),var(--cheese));border-radius:99px;transition:width .6s}
+.auth-box{max-width:400px;margin:0 auto;background:var(--card);border:2px solid var(--border);border-radius:22px;padding:30px;box-shadow:0 10px 40px #00000066}
+.auth-box h3{font-family:'Lobster',cursive;font-size:26px;color:var(--cheese);margin-bottom:16px;text-shadow:2px 2px 0 var(--brown)}
+.toast{position:fixed;bottom:28px;right:28px;padding:13px 20px;border-radius:14px;font-size:14px;font-weight:800;z-index:999;opacity:0;transform:translateY(14px);transition:all .3s;pointer-events:none;font-family:'Nunito',sans-serif}
+.toast.show{opacity:1;transform:translateY(0)}
+.toast-success{background:linear-gradient(135deg,#27ae60,#2ecc71);color:#fff}
+.toast-error{background:linear-gradient(135deg,var(--tomato),var(--tomato2));color:#fff}
+.empty{color:var(--muted);font-size:14px;padding:40px 0;text-align:center;font-weight:700}
+.item-line{font-size:13px;color:var(--muted);padding:2px 0}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- HERO -->
+  <div class="hero">
+    <h1>🍕 Slice & <span>Spice</span></h1>
+    <p>Online Pizza Ordering System</p>
+  </div>
+ <div class="divider">🍕 · 🧀 · 🍅 · 🧅 · 🍕</div>
+
+  <!-- ROLE BAR — always visible -->
+  <div class="role-bar" id="role-bar" style="display:none">
+    <button class="role-chip active" data-role="customer">👤 Customer</button>
+    <button class="role-chip" data-role="cook">👨‍🍳 Cook</button>
+    <button class="role-chip" data-role="cashier">💰 Cashier</button>
+    <button class="role-chip" data-role="delivery">🛵 Delivery</button>
+    <button class="role-chip" data-role="admin">📊 Admin</button>
+  </div>
+
+  <!-- User bar -->
+  <div id="user-bar" style="display:none;justify-content:space-between;align-items:center;margin-bottom:14px;background:var(--card);border:2px solid var(--border);border-radius:14px;padding:10px 16px">
+    <span id="user-bar-name" style="font-family:'Lobster',cursive;font-size:18px;color:var(--cheese)"></span>
+    <button class="secondary-btn" onclick="doLogout()">Logout</button>
+  </div>
+
+  <!-- ═══ CUSTOMER ═══ -->
+  <div class="view active" id="view-customer">
+
+    <!-- Login -->
+    <div id="cust-auth">
+      <div class="auth-box">
+        <h3>🔐 Login</h3>
+        <label class="form-label">Full Name</label>
+        <input class="input" id="login-name" placeholder="Maria Santos"/>
+        <label class="form-label">Email</label>
+        <input class="input" id="login-email" type="email" placeholder="you@email.com"/>
+        <button class="primary-btn full" onclick="doLogin()">🍕 Let's Order!</button>
+        <p style="text-align:center;margin-top:12px;font-size:12px;color:var(--muted)">Enter your name & email to get started!</p>
+      </div>
+    </div>
+    <!-- Shop (after login) -->
+    <div id="cust-shop" style="display:none">
+
+      <div class="tab-bar">
+        <button class="tab-btn cust-tab active" data-tab="menu">🍕 Menu</button>
+        <button class="tab-btn cust-tab" data-tab="cart">🛒 Cart</button>
+        <button class="tab-btn cust-tab" data-tab="history">📋 My Orders</button>
+      </div>
+      <div class="cust-panel active" id="cust-panel-menu">
+        <h2 class="section-title">Our Pizzas</h2>
+        <div class="pizza-grid" id="menu-grid"></div>
+      </div>
+      <div class="cust-panel" id="cust-panel-cart">
+        <h2 class="section-title">Your Cart</h2>
+        <div id="cart-list"></div>
+        <div id="cart-total"></div>
+        <div style="margin-top:12px">
+          <label class="form-label">Delivery Address</label>
+          <input class="input" id="delivery-address" placeholder="Street, Barangay, City"/>
+          <label class="form-label">Notes (optional)</label>
+          <input class="input" id="order-notes" placeholder="e.g. Ring the bell"/>
+          <button class="primary-btn full" onclick="placeOrder()">Place Order 🍕</button>
+        </div>
+      </div>
+      <div class="cust-panel" id="cust-panel-history">
+        <h2 class="section-title">My Orders</h2>
+        <div id="my-orders-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ COOK ═══ -->
+  <div class="view" id="view-cook">
+    <h2 class="section-title">👨‍🍳 Kitchen Display</h2>
+    <div id="cook-orders"></div>
+  </div>
+
+  <!-- ═══ CASHIER ═══ -->
+  <div class="view" id="view-cashier">
+    <h2 class="section-title">💰 Cashier — Payments</h2>
+    <div id="cashier-orders"></div>
+  </div>
+
+  <!-- ═══ DELIVERY ═══ -->
+  <div class="view" id="view-delivery">
+    <h2 class="section-title">🛵 Delivery Dashboard</h2>
+    <div id="delivery-orders"></div>
+  </div>
+
+  <!-- ═══ ADMIN ═══ -->
+  <div class="view" id="view-admin">
+    <h2 class="section-title">📊 Admin — Sales Report</h2>
+    <div class="stats-grid" style="margin-bottom:22px">
+      <div class="stat-card"><div class="stat-num" id="stat-revenue">₱0</div><div class="stat-label">Revenue</div></div>
+      <div class="stat-card"><div class="stat-num" id="stat-orders">0</div><div class="stat-label">Orders</div></div>
+      <div class="stat-card"><div class="stat-num" id="stat-paid">0</div><div class="stat-label">Paid</div></div>
+      <div class="stat-card"><div class="stat-num" id="stat-pending">0</div><div class="stat-label">Pending</div></div>
+    </div>
+    <h3 style="font-family:'Lobster',cursive;color:var(--cheese);margin-bottom:12px;font-size:20px">🏆 Top Selling Pizzas</h3>
+    <div id="top-pizzas"></div>
+    <h3 style="font-family:'Lobster',cursive;color:var(--cheese);margin:20px 0 12px;font-size:20px">📋 All Orders</h3>
+    <div id="admin-orders"></div>
+  </div>
+
+</div>
+
+<!-- PIZZA MODAL -->
+<div class="modal-overlay" id="pizza-modal" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <h3 id="modal-name"></h3>
+    <p id="modal-desc" style="color:var(--muted);margin-bottom:14px;font-size:13px"></p>
+    <input type="hidden" id="modal-id"/>
+    <input type="hidden" id="modal-price"/>
+    <label class="form-label">Size</label>
+    <div class="btn-group" id="size-btns">
+      <button class="opt-btn active" onclick="setSize(this,'Small')">Small — ₱<span></span></button>
+      <button class="opt-btn" onclick="setSize(this,'Medium')">Medium — ₱<span></span></button>
+      <button class="opt-btn" onclick="setSize(this,'Large')">Large — ₱<span></span></button>
+    </div>
+    <label class="form-label">Extra Toppings <span style="color:var(--muted);font-size:11px">(+₱20 each)</span></label>
+    <div class="btn-group">
+      <button class="opt-btn" onclick="toggleTop(this,'Extra Cheese')">Extra Cheese</button>
+      <button class="opt-btn" onclick="toggleTop(this,'Mushrooms')">Mushrooms</button>
+      <button class="opt-btn" onclick="toggleTop(this,'Black Olives')">Black Olives</button>
+      <button class="opt-btn" onclick="toggleTop(this,'Jalapeños')">Jalapeños</button>
+      <button class="opt-btn" onclick="toggleTop(this,'Bacon Bits')">Bacon Bits</button>
+      <button class="opt-btn" onclick="toggleTop(this,'Onions')">Onions</button>
+    </div>
+    <label class="form-label">Quantity</label>
+    <div class="qty-row">
+      <button class="qty-btn" onclick="chgQty(-1)">−</button>
+      <span class="qty-val" id="m-qty">1</span>
+      <button class="qty-btn" onclick="chgQty(1)">+</button>
+    </div>
+    <div class="modal-footer">
+      <span class="price big" id="m-total">₱0</span>
+      <div style="display:flex;gap:8px">
+        <button class="secondary-btn" onclick="closeModal()">Cancel</button>
+        <button class="primary-btn" onclick="addToCart()">Add to Cart 🛒</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const MENU=[
+  {id:1,name:'Margherita',desc:'Classic tomato sauce & fresh mozzarella',price:199,
+   img:'https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=200&q=80'},
+  {id:2,name:'Pepperoni Blast',desc:'Double pepperoni with stretchy cheddar',price:249,
+   img:'https://images.unsplash.com/photo-1628840042765-356cda07504e?w=200&q=80'},
+  {id:3,name:'BBQ Chicken',desc:'Smoky BBQ sauce with juicy grilled chicken',price:269,
+   img:'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=200&q=80'},
+  {id:4,name:'Veggie Supreme',desc:'Bell peppers, mushrooms & black olives',price:219,
+   img:'https://images.unsplash.com/photo-1604917877934-07d8d248d396?w=200&q=80'},
+  {id:5,name:'Hawaiian',desc:'Honey ham & sweet pineapple with mozza',price:229,
+   img:'https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=200&q=80'},
+  {id:6,name:'Four Cheese',desc:'Mozza, cheddar, gouda & parmesan blend',price:279,
+   img:'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=200&q=80'},
+  {id:7,name:'Spicy Inferno',desc:'Jalapeños, hot sauce & spicy sausage',price:259,
+   img:'https://images.unsplash.com/photo-1548369937-47519962c11a?w=200&q=80'},
+  {id:8,name:'Mushroom Truffle',desc:'Wild mushrooms with truffle oil drizzle',price:289,
+   img:'https://images.unsplash.com/photo-1590947132387-155cc02f3212?w=200&q=80'},
+  {id:9,name:'Meat Lovers',desc:'Pepperoni, sausage, bacon & ground beef',price:299,
+   img:'https://images.unsplash.com/photo-1593560708920-61dd98c46a4e?w=200&q=80'},
+];
+const SM={Small:1,Medium:1.25,Large:1.5};
+const SC={'Pending':'#f59e0b','Preparing':'#3b82f6','Ready':'#8b5cf6','Out for Delivery':'#f97316','Delivered':'#10b981'};
+let orders=[],cart=[],user=null,size='Small',tops=[],qty=1,oid=1000,loginRole='customer';
+
+// Role Switcher
+document.querySelectorAll('.role-chip').forEach(b=>{
+  b.addEventListener('click',()=>{
+    document.querySelectorAll('.role-chip').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active');
+    document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+    document.getElementById('view-'+b.dataset.role).classList.add('active');
+    if(b.dataset.role==='cook') renderCook();
+    if(b.dataset.role==='cashier') renderCashier();
+    if(b.dataset.role==='delivery') renderDelivery();
+    if(b.dataset.role==='admin') renderAdmin();
+  });
+});
+
+// Login role picker
+function pickRole(btn,role){
+  loginRole=role;
+  document.querySelectorAll('#login-role-btns .opt-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+// Customer tabs
+document.querySelectorAll('.cust-tab').forEach(b=>{
+  b.addEventListener('click',()=>{
+    document.querySelectorAll('.cust-tab').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active');
+    document.querySelectorAll('.cust-panel').forEach(p=>p.classList.remove('active'));
+    document.getElementById('cust-panel-'+b.dataset.tab).classList.add('active');
+    if(b.dataset.tab==='history') renderHistory();
+  });
+});
+
+// Auth
+function doLogin(){
+  const n=document.getElementById('login-name').value.trim();
+  const e=document.getElementById('login-email').value.trim();
+  if(!n||!e){toast('Enter your name and email!','error');return;}
+  user={name:n,email:e};
+  // Show role bar
+  document.getElementById('role-bar').style.display='flex';
+  // Show user info bar
+  document.getElementById('user-bar').style.display='flex';
+  document.getElementById('user-bar-name').textContent='👋 Hi, '+n+'!';
+  // Show customer view
+  document.getElementById('cust-auth').style.display='none';
+  document.getElementById('cust-shop').style.display='block';
+  document.getElementById('view-customer').classList.add('active');
+  renderMenu();renderCart();
+  toast('Welcome '+n+'! 🍕');
+}
+function doLogout(){
+  user=null;cart=[];
+  document.getElementById('role-bar').style.display='none';
+  document.getElementById('user-bar').style.display='none';
+  document.getElementById('cust-auth').style.display='block';
+  document.getElementById('cust-shop').style.display='none';
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById('view-customer').classList.add('active');
+  toast('Logged out!');
+}
+
+// Menu
+function renderMenu(){
+  document.getElementById('menu-grid').innerHTML=MENU.map(p=>`
+    <div class="pizza-card" onclick="openModal(${p.id})">
+      <img src="${p.img}" alt="${p.name}" style="width:70px;height:70px;border-radius:12px;object-fit:cover;flex-shrink:0;box-shadow:0 4px 12px #00000066"/>
+      <div class="pizza-info"><strong>${p.name}</strong><p>${p.desc}</p><span class="price">from ₱${p.price}</span></div>
+    </div>`).join('');
+}
+
+// Modal
+function openModal(id){
+  const p=MENU.find(x=>x.id===id);
+  document.getElementById('modal-name').textContent=p.name;
+  document.getElementById('modal-desc').innerHTML=`<img src="${p.img}" alt="${p.name}" style="width:100%;height:160px;object-fit:cover;border-radius:14px;margin-bottom:10px;"/>${p.desc}`;
+  document.getElementById('modal-id').value=id;
+  document.getElementById('modal-price').value=p.price;
+  size='Small';tops=[];qty=1;
+  document.getElementById('m-qty').textContent=1;
+  document.querySelectorAll('#size-btns .opt-btn').forEach((b,i)=>{
+    b.classList.toggle('active',i===0);
+    b.querySelector('span').textContent=Math.round(p.price*[1,1.25,1.5][i]);
+  });
+  document.querySelectorAll('.opt-btn').forEach(b=>{if(!b.closest('#size-btns'))b.classList.remove('active')});
+  updPrice();
+  document.getElementById('pizza-modal').classList.add('open');
+}
+function closeModal(){document.getElementById('pizza-modal').classList.remove('open')}
+function setSize(b,s){size=s;document.querySelectorAll('#size-btns .opt-btn').forEach(x=>x.classList.remove('active'));b.classList.add('active');updPrice()}
+function toggleTop(b,t){tops.includes(t)?tops=tops.filter(x=>x!==t):tops.push(t);b.classList.toggle('active',tops.includes(t));updPrice()}
+function chgQty(d){qty=Math.max(1,qty+d);document.getElementById('m-qty').textContent=qty;updPrice()}
+function updPrice(){
+  const base=parseFloat(document.getElementById('modal-price').value)||0;
+  const u=Math.round(base*SM[size]+tops.length*20);
+  document.getElementById('m-total').textContent='₱'+(u*qty).toLocaleString();
+}
+function addToCart(){
+  const id=parseInt(document.getElementById('modal-id').value);
+  const p=MENU.find(x=>x.id===id);
+  const u=Math.round(p.price*SM[size]+tops.length*20);
+  cart.push({_k:Date.now(),id,name:p.name,size,tops:[...tops],qty,unit:u,sub:u*qty});
+  closeModal();renderCart();
+  toast(p.name+' added! 🛒');
+  document.querySelector('.cust-tab[data-tab="cart"]').click();
+}
+
+// Cart
+function renderCart(){
+  const el=document.getElementById('cart-list');
+  const tel=document.getElementById('cart-total');
+  if(!cart.length){el.innerHTML='<p class="empty">Your cart is empty. Add some pizza! 🍕</p>';tel.innerHTML='';return;}
+  el.innerHTML=cart.map(i=>`
+    <div class="order-row">
+      <div><strong>${i.name}</strong> — ${i.size}<br>
+      <small style="color:var(--muted)">${i.tops.length?i.tops.join(', '):'No extra toppings'} × ${i.qty}</small></div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span class="price">₱${i.sub.toLocaleString()}</span>
+        <button class="del-btn" onclick="rmCart(${i._k})">✕</button>
+      </div>
+    </div>`).join('');
+  const tot=cart.reduce((s,i)=>s+i.sub,0);
+  tel.innerHTML=`<div class="total-row"><strong>Total</strong><span class="price big">₱${tot.toLocaleString()}</span></div>`;
+}
+function rmCart(k){cart=cart.filter(i=>i._k!==k);renderCart()}
+
+// Place order
+function placeOrder(){
+  if(!cart.length){toast('Your cart is empty!','error');return;}
+  const addr=document.getElementById('delivery-address').value.trim();
+  if(!addr){toast('Enter your delivery address!','error');return;}
+  const tot=cart.reduce((s,i)=>s+i.sub,0);
+  orders.push({id:++oid,customer:user.name,items:[...cart],address:addr,
+    notes:document.getElementById('order-notes').value,
+    status:'Pending',paid:false,total:tot,
+    time:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})});
+  cart=[];renderCart();
+  toast('Order #'+oid+' placed! 🍕');
+  document.querySelector('.cust-tab[data-tab="history"]').click();
+}
+
+// History
+function renderHistory(){
+  const mine=orders.filter(o=>o.customer===user?.name).slice().reverse();
+  document.getElementById('my-orders-list').innerHTML=mine.length
+    ?mine.map(o=>`<div class="order-card">
+      <div class="order-card-head"><span>Order #${o.id}</span><span class="status-badge" style="background:${SC[o.status]}">${o.status}</span></div>
+      ${o.items.map(i=>`<div class="item-line">🍕 ${i.name} (${i.size}) ×${i.qty}</div>`).join('')}
+      <div class="order-card-foot"><span>📍 ${o.address}</span><strong class="price">₱${o.total.toLocaleString()}</strong></div>
+    </div>`).join('')
+    :'<p class="empty">No orders yet! 🍕</p>';
+}
+
+// Cook
+function renderCook(){
+  const act=orders.filter(o=>['Pending','Preparing'].includes(o.status));
+  document.getElementById('cook-orders').innerHTML=act.length
+    ?act.map(o=>`<div class="order-card kitchen">
+      <div class="order-card-head"><span>Order #${o.id} — <strong>${o.customer}</strong></span><span class="status-badge" style="background:${SC[o.status]}">${o.status}</span></div>
+      <p style="font-size:13px;color:var(--muted);margin:4px 0">📍 ${o.address}</p>
+      ${o.items.map(i=>`<div class="item-line">🍕 ${i.name} (${i.size}) ×${i.qty}${i.tops.length?' + '+i.tops.join(', '):''}</div>`).join('')}
+      <div style="margin-top:12px">
+        ${o.status==='Pending'?`<button class="primary-btn" onclick="advCook(${o.id})">▶ Start Preparing</button>`:`<button class="primary-btn" onclick="advCook(${o.id})">✅ Mark as Ready</button>`}
+      </div></div>`).join('')
+    :'<p class="empty">No active orders. 🎉 Take a break!</p>';
+}
+function advCook(id){
+  const o=orders.find(x=>x.id===id);
+  o.status=o.status==='Pending'?'Preparing':'Ready';
+  toast('Order #'+id+' → '+o.status);renderCook();
+}
+
+// Cashier
+function renderCashier(){
+  const un=orders.filter(o=>o.status==='Ready'&&!o.paid);
+  document.getElementById('cashier-orders').innerHTML=un.length
+    ?un.map(o=>`<div class="order-card">
+      <div class="order-card-head"><span>Order #${o.id} — ${o.customer}</span><span class="price big">₱${o.total.toLocaleString()}</span></div>
+      <p style="font-size:13px;color:var(--muted);margin:4px 0">📍 ${o.address}</p>
+      ${o.items.map(i=>`<div class="item-line">🍕 ${i.name} ×${i.qty}</div>`).join('')}
+      <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <select id="m-${o.id}" class="input" style="width:115px"><option>Cash</option><option>GCash</option><option>Card</option></select>
+        <input id="p-${o.id}" class="input" type="number" style="width:135px" value="${o.total}"/>
+        <button class="primary-btn" onclick="pay(${o.id})">✅ Confirm & Receipt</button>
+      </div></div>`).join('')
+    :'<p class="empty">No orders awaiting payment.</p>';
+}
+function pay(id){
+  const o=orders.find(x=>x.id===id);
+  const method=document.getElementById('m-'+id).value;
+  const paid=parseFloat(document.getElementById('p-'+id).value)||0;
+  if(paid<o.total){toast('Amount is less than total!','error');return;}
+  const chg=paid-o.total;
+  o.paid=true;o.status='Out for Delivery';o.method=method;o.paid_amt=paid;o.change=chg;
+  toast('Payment confirmed! Change: ₱'+chg.toLocaleString());
+  const w=window.open('','_blank','width=420,height=580');
+  w.document.write(`<html><head><title>Receipt #${o.id}</title><style>body{font-family:monospace;padding:24px}hr{border:1px dashed #000}.big{font-size:18px;font-weight:bold}</style></head><body>
+  <h2>🍕 Slice & Spice</h2><p><b>Order #${o.id}</b><br>${o.customer}<br>${o.address}</p><hr>
+  ${o.items.map(i=>`<p>${i.name} (${i.size}) ×${i.qty} — ₱${i.sub.toLocaleString()}</p>`).join('')}
+  <hr><p class="big">TOTAL: ₱${o.total.toLocaleString()}</p>
+  <p>Method: ${method}<br>Paid: ₱${paid.toLocaleString()}<br>Change: ₱${chg.toLocaleString()}</p>
+  <script>window.print()<\/script></body></html>`);
+  renderCashier();
+}
+
+// Delivery
+function renderDelivery(){
+  const act=orders.filter(o=>o.status==='Out for Delivery');
+  document.getElementById('delivery-orders').innerHTML=act.length
+    ?act.map(o=>`<div class="order-card">
+      <div class="order-card-head"><span>Order #${o.id} — <strong>${o.customer}</strong></span><span class="status-badge" style="background:${SC[o.status]}">${o.status}</span></div>
+      <p style="font-size:13px;color:var(--muted);margin:6px 0">📍 ${o.address}</p>
+      ${o.items.map(i=>`<div class="item-line">🍕 ${i.name} ×${i.qty}</div>`).join('')}
+      <button class="primary-btn" style="margin-top:12px" onclick="deliver(${o.id})">🏠 Mark as Delivered</button>
+    </div>`).join('')
+    :'<p class="empty">No active deliveries.</p>';
+}
+function deliver(id){orders.find(x=>x.id===id).status='Delivered';toast('Order #'+id+' Delivered! 🏠');renderDelivery()}
+
+// Admin
+function renderAdmin(){
+  const paid=orders.filter(o=>o.paid);
+  const rev=paid.reduce((s,o)=>s+o.total,0);
+  document.getElementById('stat-revenue').textContent='₱'+rev.toLocaleString();
+  document.getElementById('stat-orders').textContent=orders.length;
+  document.getElementById('stat-paid').textContent=paid.length;
+  document.getElementById('stat-pending').textContent=orders.filter(o=>['Pending','Preparing'].includes(o.status)).length;
+  const cnt={};orders.forEach(o=>o.items.forEach(i=>{cnt[i.name]=(cnt[i.name]||0)+i.qty}));
+  const top=Object.entries(cnt).sort((a,b)=>b[1]-a[1]);
+  const mx=top[0]?.[1]||1;
+  document.getElementById('top-pizzas').innerHTML=top.length
+    ?top.map(([n,q])=>`<div class="bar-row"><span style="width:155px;font-size:13px;font-weight:700">${n}</span><div class="bar-track"><div class="bar-fill" style="width:${Math.round(q/mx*100)}%"></div></div><span style="font-size:13px;color:var(--cheese);margin-left:8px;font-weight:800">${q} pcs</span></div>`).join('')
+    :'<p class="empty">No sales data yet.</p>';
+  document.getElementById('admin-orders').innerHTML=orders.length
+    ?orders.slice().reverse().map(o=>`<div class="order-card"><div class="order-card-head"><span>#${o.id} — ${o.customer}</span><span class="status-badge" style="background:${SC[o.status]}">${o.status}</span></div><div class="order-card-foot"><span>${o.items.map(i=>i.name).join(', ')}</span><strong class="price">₱${o.total.toLocaleString()}</strong></div></div>`).join('')
+    :'<p class="empty">No orders yet.</p>';
+}
+
+// Toast
+function toast(msg,type='success'){
+  const el=document.createElement('div');
+  el.className='toast toast-'+type;el.textContent=msg;
+  document.body.appendChild(el);
+  setTimeout(()=>el.classList.add('show'),10);
+  setTimeout(()=>{el.classList.remove('show');setTimeout(()=>el.remove(),300)},3000);
+}
+</script>
+</body>
+</html>
